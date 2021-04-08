@@ -27,7 +27,7 @@ namespace expreval
     {
         R"(,)",                            // COMMA
         R"([a-zA-Z]+\w*\s*\()",            // FUNCTION
-        R"([a-zA-Z]+\w*)",                 // VARIABLE
+        R"([a-zA-Z]+\w*(\[[0-9]+\])*)",                 // VARIABLE
         R"([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+)",        // NUMBER note: \d does not work
         R"(\+|\-|\*|/)",                   // OPARITHM
         R"(\()",                           // PAROPEN
@@ -75,7 +75,7 @@ namespace expreval
 
             std::cout << "/////////////////// pattern: " << pattern << "\n";
             std::regex re1(pattern, std::regex_constants::extended);
-            std::string str1(R"(3.5*f(x+1,2.*(-sin(z) + .1+3))+2)");
+            std::string str1(R"(3.5*f(x[3]+1,2.*(-sin(z) + .1+y[15]))+2)");
             auto re_begin = 
                 std::sregex_iterator(str1.begin(), str1.end(), re1);
             auto re_end = std::sregex_iterator();
