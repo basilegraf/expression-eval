@@ -48,7 +48,7 @@ namespace
 expreval::Token::Token()
 {
 
-    std::cout << "pattern: " << pattern << "\n";
+    /*std::cout << "pattern: " << pattern << "\n";
     std::regex re1(pattern, std::regex_constants::extended);
     std::string str1(R"(3.5*f(x[3]+1,2.*(-sin(z) + .1+y[15]))+2)");
     auto re_begin =
@@ -63,7 +63,7 @@ expreval::Token::Token()
         std::smatch match = *i;
         std::string match_str = match.str();
         std::cout << match_str << '\n';
-    }
+    }*/
 
     return;
 }
@@ -71,21 +71,39 @@ expreval::Token::Token()
 
 std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 {
-    
+    // Re for general token pattern
     std::regex reTokens(pattern, std::regex_constants::extended);
-    
+    // Re for each tokens
+    std::vector<std::basic_regex<char>> reToken;
+    for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
+    {
+        reToken.emplace_back(patterns[k], std::regex_constants::extended);
+    }
     auto re_begin =
         std::sregex_iterator(sexpr.begin(), sexpr.end(), reTokens);
     auto re_end = std::sregex_iterator();
 
-    std::cout << "Found "
+    std::cout << "Tokenize: Found "
               << std::distance(re_begin, re_end)
               << " matches:\n";
+              
     std::vector<expreval::Token> tokens(std::distance(re_begin, re_end));
+    
     for (std::sregex_iterator i = re_begin; i != re_end; ++i) {
         std::smatch match = *i;
         std::string tokStr = match.str();
-        std::cout << tokStr << '\n';
+        std::cout << tokStr << '\n'; // TODO Remove
+        for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
+        {
+            if (std::regex_match(tokStr, reToken.at(k)))
+            {
+                std::cout << "Matched " << k << "\n";
+                tokens.emplace_back();
+                
+                break;
+            }
+            
+        }
     }
     
     return tokens;

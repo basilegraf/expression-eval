@@ -19,6 +19,10 @@ namespace expreval
     {
         Token();
         static std::vector<Token> Tokenize(std::string sexpr);
+        
+        unsigned int type;
+        int precedence;
+        int nary;
     };
     
     template<class T>
