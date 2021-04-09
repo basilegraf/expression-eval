@@ -48,25 +48,16 @@ namespace
 expreval::Token::Token()
 {
 
-    /*std::cout << "pattern: " << pattern << "\n";
-    std::regex re1(pattern, std::regex_constants::extended);
-    std::string str1(R"(3.5*f(x[3]+1,2.*(-sin(z) + .1+y[15]))+2)");
-    auto re_begin =
-        std::sregex_iterator(str1.begin(), str1.end(), re1);
-    auto re_end = std::sregex_iterator();
-
-    std::cout << "Found "
-              << std::distance(re_begin, re_end)
-              << " matches:\n";
-
-    for (std::sregex_iterator i = re_begin; i != re_end; ++i) {
-        std::smatch match = *i;
-        std::string match_str = match.str();
-        std::cout << match_str << '\n';
-    }*/
+    
 
     return;
 }
+
+
+expreval::TreeNode::TreeNode()
+{
+}
+
 
 
 std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)

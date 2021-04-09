@@ -11,9 +11,8 @@
 namespace expreval
 {
     
-    
-    
-    
+    typedef double expr_val_t;
+    struct TreeNode;
     
     struct Token
     {
@@ -23,9 +22,17 @@ namespace expreval
         unsigned int type;
         int precedence;
         int nary;
+        std::vector<TreeNode> functionArgs; // Only used if type == FUNCTION
     };
     
-    template<class T>
+    struct TreeNode
+    {
+        expr_val_t* value;
+        TreeNode();
+        TreeNode* parent; // Needed?
+        std::vector<TreeNode> children;
+    };
+    
     class ShuntingYard
     {
         ShuntingYard()
