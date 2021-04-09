@@ -10,20 +10,10 @@
 
 namespace
 {
-    enum eTokenType 
-    {
-        COMMA = 0,
-        FUNCTION,
-        VARIABLE,
-        NUMBER,
-        OPARITHM,
-        PARENOPEN,
-        PARENCLOSE,
-        NUMBER_TOKEN_TYPE
-    };
+    
     
     // Individual token patterns
-    std::array<std::string, NUMBER_TOKEN_TYPE> patterns 
+    std::array<std::string, expreval::NUMBER_TOKEN_TYPE> patterns 
     {
         R"(,)",                            // COMMA
         R"([a-zA-Z]+\w*\s*\()",            // FUNCTION
@@ -45,16 +35,19 @@ namespace
         patterns[6] + R"())";
 }
 
-expreval::Token::Token()
+expreval::Token::Token() :
+    type(VARIABLE),
+    precedence(-1),
+    nary(0),
+    functionArgs(0)
 {
-
-    
-
     return;
 }
 
 
-expreval::TreeNode::TreeNode()
+expreval::TreeNode::TreeNode() :
+    parent(nullptr),
+    children(0)
 {
 }
 
@@ -90,7 +83,15 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
             {
                 std::cout << "Matched " << k << "\n";
                 tokens.emplace_back();
-                
+                tokens.back().type = expreval::eTokenType(k);
+                if (tokens.back().type == expreval::eTokenType::OPARITHM)
+                {
+                    tokens.back().nary = 2;
+                    if (tokStr.compare("-") || tokStr.compare("+"))
+                    {
+                        // TODO
+                    }
+                }
                 break;
             }
             

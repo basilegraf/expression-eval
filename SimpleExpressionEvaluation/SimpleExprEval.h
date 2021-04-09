@@ -10,6 +10,17 @@
 
 namespace expreval
 {
+    enum eTokenType 
+    {
+        COMMA = 0,
+        FUNCTION,
+        VARIABLE,
+        NUMBER,
+        OPARITHM,
+        PARENOPEN,
+        PARENCLOSE,
+        NUMBER_TOKEN_TYPE
+    };
     
     typedef double expr_val_t;
     struct TreeNode;
@@ -19,7 +30,7 @@ namespace expreval
         Token();
         static std::vector<Token> Tokenize(std::string sexpr);
         
-        unsigned int type;
+        eTokenType type;
         int precedence;
         int nary;
         std::vector<TreeNode> functionArgs; // Only used if type == FUNCTION
