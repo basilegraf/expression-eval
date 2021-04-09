@@ -1,3 +1,3 @@
-Debug/main.cpp.o: main.cpp SimpleExprEval.hpp
+Debug/main.cpp.o: main.cpp SimpleExprEval.h
 
-SimpleExprEval.hpp:
+SimpleExprEval.h:

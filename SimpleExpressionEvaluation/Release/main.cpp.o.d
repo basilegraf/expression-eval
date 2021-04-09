@@ -1,3 +1,3 @@
-Release/main.cpp.o: main.cpp SimpleExprEval.hpp
+Release/main.cpp.o: main.cpp SimpleExprEval.h
 
-SimpleExprEval.hpp:
+SimpleExprEval.h:

@@ -3,7 +3,7 @@
 #include <exception>
 
 
-#include "SimpleExprEval.hpp"
+#include "SimpleExprEval.h"
 
 int main(int argc, char **argv)
 {
@@ -12,6 +12,10 @@ int main(int argc, char **argv)
 	printf("hello world! \n");
     
     auto tk = expreval::Token();
+    
+    //////////////////////////
+    std::string sexpr(R"(3.5*f(x[3]+1,2.*(-sin(z) + .1+y[15]))+2)");
+    auto tokens = expreval::Token::Tokenize(sexpr);
     
     }
     catch (const std::exception& e)

@@ -8,3 +8,7 @@ Makefile
 
 *.session
 *.tags
+
+SimpleExpressionEvaluation/Debug/
+SimpleExpressionEvaluation/Release/
+*.o
