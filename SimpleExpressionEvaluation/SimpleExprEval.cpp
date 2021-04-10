@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <array>
 #include <string>
 #include <regex>
 #include <iterator>
+#include <stdexcept>
 
 #include "SimpleExprEval.h"
 
@@ -45,6 +47,7 @@ namespace
 }
 
 expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
+    str(tokStr),
     type(expreval::eTokenType::NUMBER_TOKEN_TYPE),
     precedence(-1),
     nary(0), // in case of function, nary will be determined during parsing
@@ -101,7 +104,7 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
 
 
 expreval::TreeNode::TreeNode() :
-    parent(nullptr),
+    //parent(nullptr),
     children(0)
 {
 }
@@ -135,4 +138,55 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
     }
     
     return tokens;
+}
+
+
+
+
+expreval::ShuntingYard::ShuntingYard(std::string sexpr) :
+    _expression(sexpr)
+{
+    _tokens = expreval::Token::Tokenize(_expression);
+    _tree = expreval::TreeNode();
+}
+
+
+expreval::TreeNode expreval::ShuntingYard::_apply(Token optor, std::vector<TreeNode> opands)
+{
+    expreval::TreeNode tree;
+    // Keep operator token in root node
+    tree.token = optor;
+    // Copy operands to children (reversing order since they where popped from a stack)
+    std::reverse_copy(std::begin(opands), std::end(opands), std::begin(tree.children));
+    return tree;
+}
+
+
+void expreval::ShuntingYard::_popAndApply()
+{
+    // Get operator from operator stack
+    expreval::Token optor = _operators.top();
+    _operators.pop(); // note: pop() does not return anything...
+    // Get nary operands from operand stack
+    std::vector<TreeNode> opands(0);
+    for (int k = 0; k < optor.nary; k++)
+    {
+        opands.push_back(_operands.top());
+        _operands.pop();
+    }
+    // Apply operator to operands
+    expreval::TreeNode tree = _apply(optor, opands);
+    // Push result (tree) to operand stack
+    _operands.push(tree);
+}
+
+
+void expreval::ShuntingYard::_applyFunction(Token func)
+{
+    expreval::TreeNode funcTree;
+    funcTree.token = func;
+    // Copy function arguments to child nodes
+    std::copy(std::begin(func.functionArgs), std::end(func.functionArgs), std::begin(funcTree.children));
+    // Push function tree to operand stack
+    _operands.push(funcTree);
 }
