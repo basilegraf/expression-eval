@@ -10,7 +10,16 @@
 
 namespace
 {
-    
+    char const* cTokenName[] =
+    {
+        "COMMA",
+        "FUNCTION",
+        "VARIABLE",
+        "NUMBER",
+        "OPARITHM",
+        "PARENOPEN",
+        "PARENCLOSE"
+    };
     
     // Individual token patterns
     std::array<std::string, expreval::NUMBER_TOKEN_TYPE> patterns 
@@ -35,12 +44,58 @@ namespace
         patterns[6] + R"())";
 }
 
-expreval::Token::Token() :
-    type(VARIABLE),
+expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
+    type(expreval::eTokenType::NUMBER_TOKEN_TYPE),
     precedence(-1),
-    nary(0),
+    nary(0), // in case of function, nary will be determined during parsing
     functionArgs(0)
 {
+    
+    for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
+    {
+        // RegEx for k'th token type
+        std::regex reToken(patterns[k], std::regex_constants::extended);
+        
+        if (std::regex_match(tokStr, reToken))
+        {            
+            type = expreval::eTokenType(k);
+            
+            // If token is an arithmetic operator
+            if (type == expreval::eTokenType::OPARITHM)
+            {
+                if ((tokStr.compare("*") == 0) || (tokStr.compare("/") == 0))
+                {
+                    nary = 2;
+                    precedence = 3;
+                }
+                else if ((tokStr.compare("+") == 0) || (tokStr.compare("-") == 0))
+                {
+                    nary = 2;
+                    precedence = 1;
+                    // Detect unary - or + from the type of the previous token
+                    if (
+                    (prevTokType == expreval::eTokenType::OPARITHM) || 
+                    (prevTokType == expreval::eTokenType::COMMA) ||
+                    (prevTokType == expreval::eTokenType::FUNCTION) ||
+                    (prevTokType == expreval::eTokenType::PARENOPEN) ||
+                    (prevTokType == expreval::eTokenType::NUMBER_TOKEN_TYPE)) // this means there was no previous token
+                    {
+                        nary = 1;
+                        precedence = 2;
+                    }
+                }
+            }
+            else if (type == expreval::eTokenType::PARENOPEN)
+            {
+                precedence = 0; //Lowest precedence
+            }
+            
+            
+            std::cout << tokStr << "\tMatched " << cTokenName[k] << "\tnary = " << nary << "\t prev: "<< (int)prevTokType <<"\n";
+            
+            break;
+        }
+    }
     return;
 }
 
@@ -57,12 +112,7 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 {
     // Re for general token pattern
     std::regex reTokens(pattern, std::regex_constants::extended);
-    // Re for each tokens
-    std::vector<std::basic_regex<char>> reToken;
-    for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
-    {
-        reToken.emplace_back(patterns[k], std::regex_constants::extended);
-    }
+    
     auto re_begin =
         std::sregex_iterator(sexpr.begin(), sexpr.end(), reTokens);
     auto re_end = std::sregex_iterator();
@@ -71,31 +121,17 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
               << std::distance(re_begin, re_end)
               << " matches:\n";
               
-    std::vector<expreval::Token> tokens(std::distance(re_begin, re_end));
+    std::vector<expreval::Token> tokens(0);
     
+    // Go through all matched tokens
+    auto lastTokType = expreval::eTokenType::NUMBER_TOKEN_TYPE; // Used to mean there was no last token
     for (std::sregex_iterator i = re_begin; i != re_end; ++i) {
+    
         std::smatch match = *i;
         std::string tokStr = match.str();
-        std::cout << tokStr << '\n'; // TODO Remove
-        for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
-        {
-            if (std::regex_match(tokStr, reToken.at(k)))
-            {
-                std::cout << "Matched " << k << "\n";
-                tokens.emplace_back();
-                tokens.back().type = expreval::eTokenType(k);
-                if (tokens.back().type == expreval::eTokenType::OPARITHM)
-                {
-                    tokens.back().nary = 2;
-                    if (tokStr.compare("-") || tokStr.compare("+"))
-                    {
-                        // TODO
-                    }
-                }
-                break;
-            }
-            
-        }
+    
+        tokens.emplace_back(tokStr, lastTokType);
+        lastTokType = tokens.back().type; // Current token    
     }
     
     return tokens;

@@ -22,14 +22,16 @@ namespace expreval
         NUMBER_TOKEN_TYPE
     };
     
+    
     typedef double expr_val_t;
     struct TreeNode;
     
     struct Token
     {
-        Token();
+    public:
+        Token(std::string = "", eTokenType prevTokType = NUMBER_TOKEN_TYPE);
         static std::vector<Token> Tokenize(std::string sexpr);
-        
+    
         eTokenType type;
         int precedence;
         int nary;

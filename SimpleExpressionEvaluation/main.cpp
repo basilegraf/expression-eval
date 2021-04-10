@@ -14,7 +14,8 @@ int main(int argc, char **argv)
     auto tk = expreval::Token();
     
     //////////////////////////
-    std::string sexpr(R"(3.5*f(x[3]+1,2.*(-sin(z) + .1+y[15]))+2)");
+    std::string sexpr(R"(-3.5*f(-x[3] +1,2.*(-sin(+z) + .1+y[15]))+ 2)");
+    std::cout << "Expression: " << sexpr << "\n";
     auto tokens = expreval::Token::Tokenize(sexpr);
     
     }
