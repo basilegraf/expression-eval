@@ -144,10 +144,10 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 
 
 expreval::ShuntingYard::ShuntingYard(std::string sexpr) :
-    _expression(sexpr)
+    _expression(sexpr),
+    _tokens(0)
 {
-    _tokens = expreval::Token::Tokenize(_expression);
-    _tree = expreval::TreeNode();
+    
 }
 
 
@@ -189,4 +189,74 @@ void expreval::ShuntingYard::_applyFunction(Token func)
     std::copy(std::begin(func.functionArgs), std::end(func.functionArgs), std::begin(funcTree.children));
     // Push function tree to operand stack
     _operands.push(funcTree);
+}
+
+
+void expreval::ShuntingYard::parse()
+{
+    // Empty stacks
+    while (!_operands.empty()) _operands.pop();
+    while (!_operators.empty()) _operators.pop();
+    
+    // Init tree root
+    _tree = expreval::TreeNode();
+    
+    // Tokenize expression
+    _tokens = expreval::Token::Tokenize(_expression);
+    
+    // Read tokens from left to right
+    for (auto tokIt = _tokens.begin(); tokIt != _tokens.end(); tokIt++)
+    {
+        Token& token = *tokIt;
+        // If token is an operand, push it to the operand stack
+        if ((token.type == expreval::eTokenType::NUMBER) || (token.type == expreval::eTokenType::VARIABLE))
+        {
+            auto opand = expreval::TreeNode();
+            opand.token = token;
+            _operands.push(opand);
+        }
+        // If token is an arithmetic operator
+        else if (token.type == expreval::eTokenType::OPARITHM)
+        {
+            // While there's an optor with precedence >= the precedence of 
+            // the token, pop it and pop it's opands, apply it and push 
+            // result to the opand stack
+            while (!_operators.empty())
+            {
+                auto& topOperator = _operators.top();
+                if (topOperator.precedence >= token.precedence)
+                {
+                    // Additional condition for unary operators
+                    if ((token.nary == 1) && (topOperator.nary != 1))
+                    {
+                        break;
+                    }
+                    _popAndApply();
+                }
+                else
+                {
+                    break;
+                }
+            }
+            // Then push the token (operator) to the operator stack
+            _operators.push(token);
+        }
+        
+        else if (token.type == expreval::eTokenType::FUNCTION)
+        {
+            // Push function to operator stack (along with its to-be-filled argument list)
+            _operators.push(token);
+        }
+        
+        else if (token.type == expreval::eTokenType::COMMA)
+        {
+            while (_operators.top().type != expreval::eTokenType::FUNCTION)
+            {
+                _popAndApply();
+            }
+            // The top of the operand stack is now the next argument for that function call, add it to its list
+            _operators.top().functionArgs.push_back(_operands.top());
+            _operands.pop();
+        }
+    }
 }

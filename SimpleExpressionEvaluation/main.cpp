@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     std::cout << "Expression: " << sexpr << "\n";
     
     auto shYrd = expreval::ShuntingYard(sexpr);
-    
+    shYrd.parse();
     }
     catch (const std::exception& e)
     {
