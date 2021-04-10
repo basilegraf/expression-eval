@@ -157,6 +157,7 @@ expreval::TreeNode expreval::ShuntingYard::_apply(Token optor, std::vector<TreeN
     // Keep operator token in root node
     tree.token = optor;
     // Copy operands to children (reversing order since they where popped from a stack)
+    tree.children.resize(opands.size());
     std::reverse_copy(std::begin(opands), std::end(opands), std::begin(tree.children));
     return tree;
 }
@@ -186,6 +187,7 @@ void expreval::ShuntingYard::_applyFunction(Token func)
     expreval::TreeNode funcTree;
     funcTree.token = func;
     // Copy function arguments to child nodes
+    funcTree.children.resize(func.functionArgs.size());
     std::copy(std::begin(func.functionArgs), std::end(func.functionArgs), std::begin(funcTree.children));
     // Push function tree to operand stack
     _operands.push(funcTree);
@@ -258,5 +260,39 @@ void expreval::ShuntingYard::parse()
             _operators.top().functionArgs.push_back(_operands.top());
             _operands.pop();
         }
+        
+        else if (_operators.top().type == expreval::eTokenType::PARENOPEN)
+        {
+            // Push on operator stack
+            _operators.push(token);
+        }
+        
+        else if (_operators.top().type == expreval::eTokenType::PARENCLOSE)
+        {
+            // Pop and apply until we see a "(" or "fun("
+            while ((_operators.top().type != expreval::eTokenType::PARENOPEN) && (_operators.top().type != expreval::eTokenType::FUNCTION))
+            {
+                _popAndApply();
+            }
+            // Open paren "(" or "fun(" is on the top now
+            auto topOperator = _operators.top();
+            _operators.pop();
+            // If "(" discard, if "fun(" apply its arg list and push to operands
+            if (_operators.top().type != expreval::eTokenType::FUNCTION)
+            {
+                // The top of the operand stack is now the next argument for that function call, add it to it list
+                topOperator.functionArgs.push_back(_operands.top());
+                _operands.pop();
+                // Add function call to operand tree
+                _applyFunction(topOperator);
+            }
+        }
+    }
+    
+    // When all tokens are read, pop and apply all remaining optors (and 
+    // opands)
+    while (!_operators.empty())
+    {
+        _popAndApply();
     }
 }
