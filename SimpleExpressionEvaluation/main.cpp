@@ -12,10 +12,15 @@ int main(int argc, char **argv)
     {
     
     std::string sexpr(R"(-3.5*f(-x[3] +1,2.*(-sin(+z) + .1+y[15]))+ 2)");
+    //std::string sexpr(R"(x + f(2,m) * 3+ z)");
+    
     std::cout << "Expression: " << sexpr << "\n";
     
     auto shYrd = expreval::ShuntingYard(sexpr);
-    shYrd.parse();
+    auto tree = shYrd.parse();
+    std::cout << "Expression tree:\n";
+    tree.Print();
+    std::cout << "\n";
     }
     catch (const std::exception& e)
     {

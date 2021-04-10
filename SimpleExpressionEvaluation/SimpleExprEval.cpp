@@ -109,6 +109,28 @@ expreval::TreeNode::TreeNode() :
 {
 }
 
+void expreval::TreeNode::Print()
+{
+    if (children.size() > 0)
+    {
+        char separator = '|';
+        std::cout << "[" << token.str;
+        for (auto it = children.begin(); it != children.end(); it++)
+        {
+            std::cout << separator;
+            it->Print();
+            separator = ',';
+        }
+        std::cout << "]";
+    }
+    else
+    {
+        // This is a leaf, just print the token string
+        std::cout << token.str;
+    }
+    
+}
+
 
 
 std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
@@ -194,7 +216,7 @@ void expreval::ShuntingYard::_applyFunction(Token func)
 }
 
 
-void expreval::ShuntingYard::parse()
+expreval::TreeNode expreval::ShuntingYard::parse()
 {
     // Empty stacks
     while (!_operands.empty()) _operands.pop();
@@ -261,13 +283,13 @@ void expreval::ShuntingYard::parse()
             _operands.pop();
         }
         
-        else if (_operators.top().type == expreval::eTokenType::PARENOPEN)
+        else if (token.type == expreval::eTokenType::PARENOPEN)
         {
             // Push on operator stack
             _operators.push(token);
         }
         
-        else if (_operators.top().type == expreval::eTokenType::PARENCLOSE)
+        else if (token.type == expreval::eTokenType::PARENCLOSE)
         {
             // Pop and apply until we see a "(" or "fun("
             while ((_operators.top().type != expreval::eTokenType::PARENOPEN) && (_operators.top().type != expreval::eTokenType::FUNCTION))
@@ -278,7 +300,7 @@ void expreval::ShuntingYard::parse()
             auto topOperator = _operators.top();
             _operators.pop();
             // If "(" discard, if "fun(" apply its arg list and push to operands
-            if (_operators.top().type != expreval::eTokenType::FUNCTION)
+            if (topOperator.type == expreval::eTokenType::FUNCTION)
             {
                 // The top of the operand stack is now the next argument for that function call, add it to it list
                 topOperator.functionArgs.push_back(_operands.top());
@@ -295,4 +317,22 @@ void expreval::ShuntingYard::parse()
     {
         _popAndApply();
     }
+    
+    // Operand should contain the desired tree
+    if (_operands.size() != 1)
+    {
+        std::cout << "Operand stack size: " << _operands.size() << "\n";
+        while (!_operands.empty())
+        {
+            std::cout << "\t";
+            _operands.top().Print();
+            _operands.pop();
+            std::cout << "\n";
+        }
+        throw std::logic_error( "Operand stack ended up with a number of elements different than 1." );
+    }
+    
+    _tree = _operands.top();
+    return _tree;
 }
+

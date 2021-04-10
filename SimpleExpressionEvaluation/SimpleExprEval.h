@@ -45,6 +45,7 @@ namespace expreval
         expr_val_t* value;
         Token token; 
         TreeNode();
+        void Print();
         //TreeNode* parent; // Needed?
         std::vector<TreeNode> children;
     };
@@ -53,7 +54,7 @@ namespace expreval
     {
     public:
         ShuntingYard(std::string expression);
-        void parse();                                // Build tree from input expression
+        TreeNode parse();                                // Build tree from input expression
     private:        
         TreeNode _apply(Token optor, std::vector<TreeNode> opands);    // Build a sub-tree from an operator and list of operands (i.e. apply operator to operands)
         void _popAndApply();                         // Pop operator and operands from stacks and apply. Push result to operand stack
