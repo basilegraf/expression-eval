@@ -15,59 +15,60 @@
 namespace
 {
     // Arithmetics
-    void OperatorUnaryPlus(expreval::expr_val_t** vals)
+    static void OperatorUnaryPlus(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1];
     }
-    void OperatorUnaryMinus(expreval::expr_val_t** vals)
+    static void OperatorUnaryMinus(expreval::expr_val_t** vals)
     {
         *vals[0] = -*vals[1];
     }
-    void OperatorBinaryPlus(expreval::expr_val_t** vals)
+    static void OperatorBinaryPlus(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1] + *vals[2];
     }
-    void OperatorBinaryMinus(expreval::expr_val_t** vals)
+    static void OperatorBinaryMinus(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1] - *vals[2];
     }
-    void OperatorBinaryTimes(expreval::expr_val_t** vals)
+    static void OperatorBinaryTimes(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1] * *vals[2];
     }
-    void OperatorBinaryDivide(expreval::expr_val_t** vals)
+    static void OperatorBinaryDivide(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1] / *vals[2];
     }
-    void OperatorBinaryEqual(expreval::expr_val_t** vals)
+    static void OperatorBinaryEqual(expreval::expr_val_t** vals)
     {
         *vals[0] = *vals[1];
     }
     // Trigonometry
-    void OperatorSin(expreval::expr_val_t** vals)
+    static void OperatorSin(expreval::expr_val_t** vals)
     {
         *vals[0] = std::sin(*vals[1]);
     }
-    void OperatorCos(expreval::expr_val_t** vals)
+    static void OperatorCos(expreval::expr_val_t** vals)
     {
         *vals[0] = std::cos(*vals[1]);
     }
-    void OperatorTan(expreval::expr_val_t** vals)
+    static void OperatorTan(expreval::expr_val_t** vals)
     {
         *vals[0] = std::tan(*vals[1]);
     }
-    void OperatorASin(expreval::expr_val_t** vals)
+    static void OperatorASin(expreval::expr_val_t** vals)
     {
         *vals[0] = std::asin(*vals[1]);
     }
-    void OperatorACos(expreval::expr_val_t** vals)
+    static void OperatorACos(expreval::expr_val_t** vals)
     {
         *vals[0] = std::acos(*vals[1]);
     }
-    void OperatorATan(expreval::expr_val_t** vals)
+    static void OperatorATan(expreval::expr_val_t** vals)
     {
         *vals[0] = std::atan(*vals[1]);
     }
+    static 
     void OperatorATan2(expreval::expr_val_t** vals)
     {
         *vals[0] = std::atan2(*vals[1], *vals[2]);
