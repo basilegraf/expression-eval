@@ -2,6 +2,7 @@
 #include <vector>
 #include <exception>
 
+#include <string>
 
 
 #include "ExpressionParser.h"
@@ -38,6 +39,8 @@ int main(int argc, char **argv)
         
         compiler.AddExpressionTree(tree);
         std::cout << "\n";
+        
+        
     }
     catch (const std::exception& e)
     {

@@ -13,6 +13,8 @@
 
 namespace expreval
 {
+    const unsigned int MAX_NUMBER_OPERANDS = 2;
+    
     enum eSymbolType 
     {
         VARIABLE_SYMBOL,
@@ -39,6 +41,27 @@ namespace expreval
         // Note: the symbol name is stored as the key of the symbol map
     };
     
+    namespace
+    {
+        static void DummyFunc(expreval::expr_val_t** vals){};
+    }
+    
+    // Stuct representing a single operation, return value and arguments
+    struct Operation
+    {
+        inline Operation() :
+            function(nullptr)
+        {
+            for (unsigned int k = 0; k < MAX_NUMBER_OPERANDS + 1; k++) 
+            {
+                vals[k] = nullptr;
+            }
+        };
+        
+        decltype(&DummyFunc) function;  // Function to call
+        expreval::expr_val_t* vals[MAX_NUMBER_OPERANDS + 1];    // Array of pointers to return-value, function-arg0, ..., , function-argN
+    };
+    
     class Compiler
     {
     public:
@@ -58,12 +81,13 @@ namespace expreval
         void _checkSymbolNameAvailable(std::string name);
         std::string _getNewName();
         void _registerTreeAndSetSymbols(TreeNode& tree, bool isRoot = true); 
+        void _compileTree(TreeNode& tree);
     
         std::map<std::string, Symbol> _symbolMap;
         unsigned int _nameCounter;
         std::vector<TreeNode> _registeredTrees;
+        std::vector<Operation> _operations;
     };
 }
-
 
 #endif

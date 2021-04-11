@@ -261,6 +261,10 @@ void expreval::Compiler::_registerTreeAndSetSymbols(expreval::TreeNode& treeOrig
                 _addPrivateConstantSymbol(symName, constantValue);
                 break;
             }
+            case expreval::COMMA :
+            case expreval::PARENOPEN :
+            case expreval::PARENCLOSE :
+            case expreval::NUMBER_TOKEN_TYPE :
             default :
             {
                 throw std::logic_error("Expression tree contains an unexpected token type.");
@@ -279,3 +283,127 @@ void expreval::Compiler::_registerTreeAndSetSymbols(expreval::TreeNode& treeOrig
 }
 
 
+
+// Compile expression trees into one list of operations
+void expreval::Compiler::Compile()
+{
+    for (auto treeIt = std::begin(_registeredTrees); treeIt != std::end(_registeredTrees); treeIt++)
+    {
+        _compileTree(*treeIt);
+    }
+}
+
+void expreval::Compiler::_compileTree(TreeNode& tree)
+{
+    // Start with childrens
+    for (auto chldIt = std::begin(tree.children); chldIt != std::end(tree.children); chldIt++)
+    {
+        _compileTree(*chldIt);
+    }
+    
+    // Add current node's operation
+    std::string opKey = "";
+    unsigned int nary = 0;
+    bool addOperation = false;
+    switch (tree.token.type)
+    {
+        case expreval::OPARITHM :
+        {
+            if (tree.token.str.compare("=") == 0)
+            {
+                throw std::logic_error("Not expecting an assignment operator in tree to compile");
+            }
+            
+            if ((tree.token.str.compare("+") == 0) || (tree.token.str.compare("-") == 0))
+            {
+                if (tree.token.nary == 1)
+                {
+                    opKey = tree.token.str + "u";
+                    nary = 1;
+                }
+                else if  (tree.token.nary == 2)
+                {
+                    opKey = tree.token.str + "b";
+                    nary = 2;
+                }
+            }
+            else
+            {
+                opKey = tree.token.str;
+                nary = 2;
+            }
+            addOperation = true;
+            break;
+        }
+        
+        case expreval::FUNCTION :
+        {
+            opKey = tree.token.str;
+            if (opKey.back() == '(') 
+            {
+                opKey.pop_back();
+            }
+            nary = (unsigned int) tree.children.size();
+            addOperation = true;
+            break;
+        }
+        
+        case expreval::VARIABLE :
+        {
+            // Nothing to do
+            break;
+        }
+        case expreval::NUMBER :
+        {
+            // Nothing to do
+            break;
+        }
+        case expreval::COMMA :
+        case expreval::PARENOPEN :
+        case expreval::PARENCLOSE :
+        case expreval::NUMBER_TOKEN_TYPE :
+        default :
+        {
+            throw std::logic_error("Expression tree to compile contains an unexpected token type.");
+        }
+    }
+    
+    if (addOperation)
+    {
+        expreval::Operation op;
+        
+        // Set function address
+        if (OperatorMap.find(opKey) == OperatorMap.end())
+        {
+            std::string message = "Function with name " + opKey + " not found in operator map (not implemented).";
+            throw std::range_error(message);
+        }
+        op.function = OperatorMap[opKey];
+        if (nary > expreval::MAX_NUMBER_OPERANDS)
+        {
+            std::string message = "Function with name " + opKey + " with " + std::to_string(nary) + " arguments exceeds maximum number of arguments MAX_NUMBER_OPERANDS =" + std::to_string(MAX_NUMBER_OPERANDS);
+            throw std::range_error(message);
+        }
+        
+        // Set return value address
+        if (!_isSymbolNameRegistered(tree.symbolName))
+        {
+            throw std::logic_error("Return value symbol not found.");
+        }
+        expreval::Symbol symRetVal = _symbolMap[tree.symbolName];
+        op.vals[0] = symRetVal.address;
+        
+        // Set arguments addresses
+        for (unsigned int k = 0; k < nary; k++)
+        {
+            if (!_isSymbolNameRegistered(tree.children.at(k).symbolName))
+            {
+                throw std::logic_error("Argument symbol not found.");
+            }
+            expreval::Symbol symArgVal = _symbolMap[tree.children.at(k).symbolName];
+            op.vals[k+1] = symArgVal.address;
+        }
+        
+        _operations.push_back(op);
+    }
+}
