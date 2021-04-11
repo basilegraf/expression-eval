@@ -5,10 +5,10 @@
  * Operators:
  *  Binary                               +, -, *, /
  *  Unary                                +, -
- *  Function calls like                  f(x), g(x,3,y)
+ *  Function calls like                  f(x), g12(x,3,y)
  * Operands:
  *  Numbers in the form                  12, 12., .12, 12.345
- *  Variables like                       x, y10, xyz
+ *  Variables like                       x, y10, xyz4n3
  *  Variables (array elements) like      x[0], y10[30], xyz[2]
  * 
  * The parsing is not robust against syntax errors.
