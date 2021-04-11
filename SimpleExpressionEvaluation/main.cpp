@@ -6,9 +6,16 @@
 
 #include <cmath>
 
+#include <chrono>
 
 #include "ExpressionParser.h"
 #include "ExpressionCompiler.h"
+
+void func(double* z, double* x, double* y)
+{
+    using namespace std;
+    *z = -3.5543*cos(-(*x) + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;
+}
 
 int main(int argc, char **argv)
 {
@@ -45,9 +52,34 @@ int main(int argc, char **argv)
         
         compiler.Compile();
         
-        compiler.Evaluate();
+        std::chrono::steady_clock::time_point begin, end; 
         
-        expreval::expr_val_t zTest = -3.5543*(std::cos)(-x + 1 + 2.*(-(std::sin)(+y[0]) + .1+y[1]))+ 2;
+        x = 0.4;
+        begin = std::chrono::steady_clock::now();
+        int nRuns = 100000;
+        for (int k = 0; k<nRuns; k++)
+        {
+            x += 1.0e-4;
+            compiler.Evaluate();
+        }
+        end = std::chrono::steady_clock::now();
+        double durEval = std::chrono::duration_cast<std::chrono::microseconds> (end - begin).count();
+        std::cout << "Time difference = " << durEval / nRuns << "[us]" << std::endl;
+        
+        x = 0.4;
+        expreval::expr_val_t zTest = 0;
+        begin = std::chrono::steady_clock::now();
+        for (int k = 0; k<nRuns; k++)
+        {
+            x += 1.0e-4;
+            //zTest = -3.5543*(std::cos)(-x + 1 + 2.*(-(std::sin)(+y[0]) + .1+y[1]))+ 2;
+            func(&zTest, &x, y);
+        }
+        end = std::chrono::steady_clock::now();
+        double durNative = std::chrono::duration_cast<std::chrono::microseconds> (end - begin).count();
+        std::cout << "Time difference = " << durNative / nRuns << "[us]" << std::endl;
+        std::cout << "Ratio = " << double(durEval) / double(durNative) << std::endl;
+        
         std::cout << z << " " << zTest << "\n";
         
         std::cout << "\n";
