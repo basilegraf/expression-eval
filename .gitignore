@@ -1,3 +1,4 @@
+*.txt
 *.mk
 *.project
 *.workspace

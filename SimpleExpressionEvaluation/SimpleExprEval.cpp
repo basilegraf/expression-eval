@@ -113,15 +113,19 @@ void expreval::TreeNode::Print()
 {
     if (children.size() > 0)
     {
-        char separator = '|';
-        std::cout << "[" << token.str;
+        std::string separator = "(";
+        if (token.type == expreval::eTokenType::FUNCTION)
+        {
+            separator =  "";
+        }         
+        std::cout << token.str;
         for (auto it = children.begin(); it != children.end(); it++)
         {
             std::cout << separator;
             it->Print();
-            separator = ',';
+            separator = ",";
         }
-        std::cout << "]";
+        std::cout << ")";
     }
     else
     {

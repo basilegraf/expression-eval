@@ -88,7 +88,7 @@ sexpr = r"-5-6*-2/4"
 sexpr = r"3*4+1+6*1"
 sexpr = r"3*(4+(1+6)*1)"
 
-sexpr = r"3*f(x+1,2*(-sin(z) + 1+3))+2"
+sexpr = r"-3.5*f(-x[3] +1,2.*(-sin(+z) + .1+y[15]))+ 2"
 
 #sexpr = r"1 + 2 + 3 + 4 + 5 + 6 + 7"
 
@@ -126,9 +126,11 @@ class ShuntingYard:
         self.operands.append(tree)
         
     def applyFunction(self, tokFun):
-        funTree = r"FUN::" + tokFun.str
+        funTree = tokFun.str
+        sep = "";
         for arg in tokFun.funargs:
-            funTree += r"{" + arg + r"}"
+            funTree += sep + arg
+            sep = ","
         funTree += r")"
         self.operands.append(funTree)
         
