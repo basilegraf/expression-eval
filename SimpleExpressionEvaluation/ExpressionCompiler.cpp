@@ -113,7 +113,6 @@ void expreval::Compiler::AddExpressionTree(TreeNode tree)
 void expreval::Compiler::RegisterSymbol(std::string name, expr_val_t& var)
 {
     // Register a scalar symbol
-    _checkSymbolNameAvailable(name);
     expreval::Symbol sym(&var);
     _symbolMap[name] = sym;
 }
@@ -124,7 +123,6 @@ void expreval::Compiler::RegisterSymbol(std::string name, expr_val_t* var, unsig
     for (unsigned int k = 0; k < size; k++)
     {
         std::string elemName = name + "[" + std::to_string(k) + "]";
-        _checkSymbolNameAvailable(elemName);
         expreval::Symbol sym(&(var[k]));
         _symbolMap[elemName] = sym;
     }
