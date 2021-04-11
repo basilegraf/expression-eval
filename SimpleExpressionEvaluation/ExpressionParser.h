@@ -18,8 +18,8 @@
  * 
  * */
 
-#ifndef SIMPLE_EXPR_EVAL
-#define SIMPLE_EXPR_EVAL
+#ifndef EXPRESSION_PARSER_H
+#define EXPRESSION_PARSER_H
 
 #include <iostream>
 #include <vector>
