@@ -78,6 +78,7 @@ namespace expreval
         void Evaluate();
     private:
         void _addPrivateSymbol(std::string name);
+        void _removePrivateSymbol(std::string name);
         void _addPrivateConstantSymbol(std::string name, expr_val_t value);
         bool _isSymbolNameRegistered(std::string name);
         void _checkSymbolNameAvailable(std::string name);
@@ -92,6 +93,7 @@ namespace expreval
         std::vector<TreeNode> _registeredTrees;
         std::vector<Operation> _operations;
         expr_val_t* _privateVariables; 
+        unsigned int _privateVariablesSize;
     };
 }
 

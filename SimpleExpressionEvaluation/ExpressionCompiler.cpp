@@ -103,7 +103,8 @@ expreval::Compiler::Compiler() :
     _alreadyCompiled(false),
     _nameCounter(0),
     _registeredTrees(0),
-    _privateVariables(nullptr)
+    _privateVariables(nullptr),
+    _privateVariablesSize(0)
 {
 }
 
@@ -145,6 +146,22 @@ void expreval::Compiler::_addPrivateSymbol(std::string name)
     _checkSymbolNameAvailable(name);
     expreval::Symbol sym;
     _symbolMap[name] = sym;
+}
+
+void expreval::Compiler::_removePrivateSymbol(std::string name)
+{
+    
+    if (!_isSymbolNameRegistered(name))
+    {
+        throw std::logic_error("Cannot remove unregistered symbol.");
+    }
+    // Allow removing only if still assigned to a nullptr
+    auto& sym = _symbolMap[name];
+    if (sym.address != nullptr)
+    {
+        throw std::logic_error("Cannot remove a symbol that was already assigned a variable address.");
+    }
+    _symbolMap.erase(name);
 }
 
 void expreval::Compiler::_addPrivateConstantSymbol(std::string name, expreval::expr_val_t value)
@@ -234,7 +251,11 @@ void expreval::Compiler::_registerTreeAndSetSymbols(expreval::TreeNode& treeOrig
         {
             throw std::range_error("The left-hand side of the root expression assignment operator should be a variable");
         }
+        // Symbol name from assignement lhs
         symName = tree.children.at(0).symbolName;
+        // Copy it to assignement rhs Symbol name
+        _removePrivateSymbol(tree.children.at(1).symbolName);
+        tree.children.at(1).symbolName = symName; 
         if (!_isSymbolNameRegistered(symName))
         {
             throw std::logic_error("The left-hand side of the root expression assignment operator was not registered");
@@ -314,6 +335,7 @@ void expreval::Compiler::_createPrivateVariables()
     
     // Create private variables array
     _privateVariables = new expreval::expr_val_t[numNullptr];
+    _privateVariablesSize = numNullptr;
     
     // Walk through symbols again and associate addresses and constant values
     unsigned int k = 0;
@@ -339,7 +361,7 @@ void expreval::Compiler::Compile()
     // Make sure we do this only once
     if (_alreadyCompiled)
     {
-        throw std::range_error("Can compile only once.");
+        throw std::runtime_error("Can compile only once.");
     }
     _alreadyCompiled = true;
     
@@ -468,3 +490,16 @@ void expreval::Compiler::_compileTree(TreeNode& tree)
     }
 }
 
+void expreval::Compiler::Evaluate()
+{
+    if (!_alreadyCompiled)
+    {
+        throw std::runtime_error("Expression was not compiled.");
+    }
+    
+    // Execute all operations
+    for (auto opIt = std::begin(_operations); opIt != std::end(_operations); ++opIt)
+    {
+        opIt->function(opIt->vals);
+    }
+}

@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include <cmath>
+
 
 #include "ExpressionParser.h"
 #include "ExpressionCompiler.h"
@@ -17,7 +19,7 @@ int main(int argc, char **argv)
         //std::string sexpr(R"(x + f(2,m) * 3+ z)");
         //std::string sexpr(R"( ((((a+2*x+1)))) = (1+3)*1)");
         
-        std::string sexpr(R"(z=-3.5543*cos(-x[3] +1, 2.*(-sin(+y[0]) + .1+y[1]))+ 2)");
+        std::string sexpr(R"(z=-3.5543*cos(-x + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2)");
         
         std::cout << "Expression: " << sexpr << "\n";
         
@@ -42,9 +44,13 @@ int main(int argc, char **argv)
         compiler.AddExpressionTree(tree);
         
         compiler.Compile();
+        
+        compiler.Evaluate();
+        
+        expreval::expr_val_t zTest = -3.5543*(std::cos)(-x + 1 + 2.*(-(std::sin)(+y[0]) + .1+y[1]))+ 2;
+        std::cout << z << " " << zTest << "\n";
+        
         std::cout << "\n";
-        
-        
     }
     catch (const std::exception& e)
     {
