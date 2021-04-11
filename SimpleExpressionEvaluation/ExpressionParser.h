@@ -79,7 +79,8 @@ namespace expreval
         TreeNode _apply(Token optor, std::vector<TreeNode> opands);    // Build a sub-tree from an operator and list of operands (i.e. apply operator to operands)
         void _popAndApply();                         // Pop operator and operands from stacks and apply. Push result to operand stack
         void _applyFunction(Token func);             // Build function sub-tree
-        
+        void _checkOperatorStack(); // error if empty
+        void _checkOperandStack(); // error if empty
         std::stack<Token> _operators;
         std::stack<TreeNode> _operands;
         std::string _expression;
