@@ -62,12 +62,12 @@ namespace expreval
     
     struct TreeNode
     {
-        expr_val_t* value;
-        Token token; 
         TreeNode();
         void Print();
-        //TreeNode* parent; // Needed?
+        
+        Token token; 
         std::vector<TreeNode> children;
+        std::string symbolName; // used by compiler only
     };
     
     class Parser

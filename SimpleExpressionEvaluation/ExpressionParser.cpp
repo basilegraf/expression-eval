@@ -109,8 +109,8 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
 
 
 expreval::TreeNode::TreeNode() :
-    //parent(nullptr),
-    children(0)
+    children(0),
+    symbolName("")
 {
 }
 
