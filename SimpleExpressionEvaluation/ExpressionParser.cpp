@@ -197,12 +197,20 @@ expreval::TreeNode expreval::Parser::_apply(Token optor, std::vector<TreeNode> o
 void expreval::Parser::_popAndApply()
 {
     // Get operator from operator stack
+    if (_operators.empty()) 
+    {
+        throw std::logic_error("No operator to pop.");
+    }
     expreval::Token optor = _operators.top();
     _operators.pop(); // note: pop() does not return anything...
     // Get nary operands from operand stack
     std::vector<TreeNode> opands(0);
     for (int k = 0; k < optor.nary; k++)
     {
+        if (_operands.empty()) 
+        {
+            throw std::logic_error("No operand to pop.");
+        }
         opands.push_back(_operands.top());
         _operands.pop();
     }
@@ -283,11 +291,14 @@ expreval::TreeNode expreval::Parser::parse()
         
         else if (token.type == expreval::eTokenType::COMMA)
         {
+            if (_operators.empty()) throw std::logic_error("No operator on stack.");
             while (_operators.top().type != expreval::eTokenType::FUNCTION)
             {
                 _popAndApply();
             }
             // The top of the operand stack is now the next argument for that function call, add it to its list
+            if (_operators.empty()) throw std::logic_error("No operator on stack.");
+            if (_operands.empty()) throw std::logic_error("No operand to pop.");
             _operators.top().functionArgs.push_back(_operands.top());
             _operands.pop();
         }
@@ -301,9 +312,11 @@ expreval::TreeNode expreval::Parser::parse()
         else if (token.type == expreval::eTokenType::PARENCLOSE)
         {
             // Pop and apply until we see a "(" or "fun("
+            if (_operators.empty()) throw std::logic_error("No operator on stack");
             while ((_operators.top().type != expreval::eTokenType::PARENOPEN) && (_operators.top().type != expreval::eTokenType::FUNCTION))
             {
                 _popAndApply();
+                if (_operators.empty()) throw std::logic_error("No operator on stack"); // Check for next while loop condition or next top
             }
             // Open paren "(" or "fun(" is on the top now
             auto topOperator = _operators.top();
@@ -312,6 +325,7 @@ expreval::TreeNode expreval::Parser::parse()
             if (topOperator.type == expreval::eTokenType::FUNCTION)
             {
                 // The top of the operand stack is now the next argument for that function call, add it to it list
+                if (_operands.empty()) throw std::logic_error("No operand to pop"); 
                 topOperator.functionArgs.push_back(_operands.top());
                 _operands.pop();
                 // Add function call to operand tree
@@ -341,6 +355,7 @@ expreval::TreeNode expreval::Parser::parse()
         throw std::logic_error( "Operand stack ended up with a number of elements different than 1." );
     }
     
+    if (_operands.empty()) throw std::logic_error("No operand on stack");
     _tree = _operands.top();
     return _tree;
 }
