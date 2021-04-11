@@ -11,8 +11,9 @@ int main(int argc, char **argv)
     try
     {
     
-    std::string sexpr(R"(-3.5543*f(-x[3] +1,2.*(-sin(+z) + .1+y3[150]))+ 2)");
+    //std::string sexpr(R"(z=-3.5543*f(-x[3] +1,2.*(-sin(+z) + .1+y3[150]))+ 2)");
     //std::string sexpr(R"(x + f(2,m) * 3+ z)");
+    std::string sexpr(R"( a+2*x+1 = 1+3*1)");
     
     std::cout << "Expression: " << sexpr << "\n";
     

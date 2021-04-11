@@ -3,7 +3,7 @@
  * The parser creates an expression tree with operators in the nodes and operands in the leaves.
  * 
  * Operators:
- *  Binary                               +, -, *, /
+ *  Binary                               +, -, *, /, =
  *  Unary                                +, -
  *  Function calls like                  f(x), g12(x,3,y)
  * Operands:

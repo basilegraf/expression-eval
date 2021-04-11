@@ -30,7 +30,7 @@ namespace
         R"([a-zA-Z]+[a-zA-Z0-9]*\s*\()",            // FUNCTION     note: \w does not work
         R"([a-zA-Z]+[a-zA-Z0-9]*(\[[0-9]+\])*)",    // VARIABLE     note: \w does not work
         R"([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+)",  // NUMBER       note: \d does not work
-        R"(\+|\-|\*|/)",                            // OPARITHM
+        R"(\+|\-|\*|/|=)",                            // OPARITHM
         R"(\()",                                    // PAROPEN
         R"(\))"                                     // PARCLOSE
     };
@@ -66,15 +66,20 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
             // If token is an arithmetic operator
             if (type == expreval::eTokenType::OPARITHM)
             {
-                if ((tokStr.compare("*") == 0) || (tokStr.compare("/") == 0))
+                if (tokStr.compare("=") == 0)
                 {
                     nary = 2;
-                    precedence = 3;
+                    precedence = 1;
+                }
+                else if ((tokStr.compare("*") == 0) || (tokStr.compare("/") == 0))
+                {
+                    nary = 2;
+                    precedence = 4;
                 }
                 else if ((tokStr.compare("+") == 0) || (tokStr.compare("-") == 0))
                 {
                     nary = 2;
-                    precedence = 1;
+                    precedence = 2;
                     // Detect unary - or + from the type of the previous token
                     if (
                     (prevTokType == expreval::eTokenType::OPARITHM) || 
@@ -84,7 +89,7 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
                     (prevTokType == expreval::eTokenType::NUMBER_TOKEN_TYPE)) // this means there was no previous token
                     {
                         nary = 1;
-                        precedence = 2;
+                        precedence = 3;
                     }
                 }
             }
