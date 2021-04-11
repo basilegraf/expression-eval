@@ -66,6 +66,8 @@ namespace expreval
     {
     public:
         Compiler();
+        Compiler(const Compiler&) = delete; // Private variables array is not copyable (as is)
+        ~Compiler();
         // Register a scalar symbol like 'x10'
         void RegisterSymbol(std::string name, expr_val_t& var); 
         // Register an array symbol. Example: name = 'y', size = 3 will create symbols y[0], y[1], y[2]
@@ -81,12 +83,15 @@ namespace expreval
         void _checkSymbolNameAvailable(std::string name);
         std::string _getNewName();
         void _registerTreeAndSetSymbols(TreeNode& tree, bool isRoot = true); 
+        void _createPrivateVariables();
         void _compileTree(TreeNode& tree);
     
+        bool _alreadyCompiled;
         std::map<std::string, Symbol> _symbolMap;
         unsigned int _nameCounter;
         std::vector<TreeNode> _registeredTrees;
         std::vector<Operation> _operations;
+        expr_val_t* _privateVariables; 
     };
 }
 

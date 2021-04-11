@@ -100,9 +100,20 @@ namespace
 
 
 expreval::Compiler::Compiler() :
+    _alreadyCompiled(false),
     _nameCounter(0),
-    _registeredTrees(0)
+    _registeredTrees(0),
+    _privateVariables(nullptr)
 {
+}
+
+expreval::Compiler::~Compiler()
+{
+    if (_privateVariables != nullptr)
+    {
+        delete[] _privateVariables;
+        _privateVariables = nullptr;
+    }
 }
 
 void expreval::Compiler::AddExpressionTree(TreeNode tree)
@@ -282,11 +293,58 @@ void expreval::Compiler::_registerTreeAndSetSymbols(expreval::TreeNode& treeOrig
     }
 }
 
+// Go through the symbol table. For every symbol with a nullptr, create a private variable and associate it to it
+void expreval::Compiler::_createPrivateVariables()
+{
+    // Prevent doing this twice
+    if (_privateVariables != nullptr)
+    {
+        throw std::logic_error("Private variables where already created. Are you trying to compile again?");
+    }
+    
+    // Count number of symbols with nullptr
+    unsigned int numNullptr = 0;
+    for (auto symIt = std::begin(_symbolMap); symIt != std::end(_symbolMap); symIt++)
+    {
+        if (symIt->second.address == nullptr)
+        {
+            numNullptr++;
+        }
+    }
+    
+    // Create private variables array
+    _privateVariables = new expreval::expr_val_t[numNullptr];
+    
+    // Walk through symbols again and associate addresses and constant values
+    unsigned int k = 0;
+    for (auto symIt = std::begin(_symbolMap); symIt != std::end(_symbolMap); symIt++)
+    {
+        if (symIt->second.address == nullptr)
+        {
+            auto& sym = symIt->second;
+            sym.address = &_privateVariables[k];
+            if (sym.type == expreval::CONSTANT_SYMBOL)
+            {
+                _privateVariables[k] = sym.constantValue;
+            }
+            k++;
+        }
+    }
+}
 
 
 // Compile expression trees into one list of operations
 void expreval::Compiler::Compile()
 {
+    // Make sure we do this only once
+    if (_alreadyCompiled)
+    {
+        throw std::range_error("Can compile only once.");
+    }
+    _alreadyCompiled = true;
+    
+    // Create private variables and associate them with the 'nullptr' symbol 
+    _createPrivateVariables();
     for (auto treeIt = std::begin(_registeredTrees); treeIt != std::end(_registeredTrees); treeIt++)
     {
         _compileTree(*treeIt);
@@ -372,25 +430,27 @@ void expreval::Compiler::_compileTree(TreeNode& tree)
     {
         expreval::Operation op;
         
-        // Set function address
+        // Checks
         if (OperatorMap.find(opKey) == OperatorMap.end())
         {
             std::string message = "Function with name " + opKey + " not found in operator map (not implemented).";
             throw std::range_error(message);
         }
-        op.function = OperatorMap[opKey];
         if (nary > expreval::MAX_NUMBER_OPERANDS)
         {
-            std::string message = "Function with name " + opKey + " with " + std::to_string(nary) + " arguments exceeds maximum number of arguments MAX_NUMBER_OPERANDS =" + std::to_string(MAX_NUMBER_OPERANDS);
+            std::string message = "Function with name " + opKey + " with " + std::to_string(nary) + " arguments exceeds maximum number of arguments MAX_NUMBER_OPERANDS = " + std::to_string(MAX_NUMBER_OPERANDS);
             throw std::range_error(message);
         }
+        
+        // Set function address
+        op.function = OperatorMap[opKey];
         
         // Set return value address
         if (!_isSymbolNameRegistered(tree.symbolName))
         {
             throw std::logic_error("Return value symbol not found.");
         }
-        expreval::Symbol symRetVal = _symbolMap[tree.symbolName];
+        expreval::Symbol& symRetVal = _symbolMap[tree.symbolName];
         op.vals[0] = symRetVal.address;
         
         // Set arguments addresses
@@ -400,10 +460,11 @@ void expreval::Compiler::_compileTree(TreeNode& tree)
             {
                 throw std::logic_error("Argument symbol not found.");
             }
-            expreval::Symbol symArgVal = _symbolMap[tree.children.at(k).symbolName];
+            expreval::Symbol& symArgVal = _symbolMap[tree.children.at(k).symbolName];
             op.vals[k+1] = symArgVal.address;
         }
         
         _operations.push_back(op);
     }
 }
+
