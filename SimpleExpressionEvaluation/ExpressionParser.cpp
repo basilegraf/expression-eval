@@ -7,7 +7,7 @@
 #include <iterator>
 #include <stdexcept>
 
-#include "SimpleExprEval.h"
+#include "ExpressionParser.h"
 
 
 namespace
@@ -26,13 +26,13 @@ namespace
     // Individual token patterns
     std::array<std::string, expreval::NUMBER_TOKEN_TYPE> patterns 
     {
-        R"(,)",                            // COMMA
-        R"([a-zA-Z]+\w*\s*\()",            // FUNCTION
-        R"([a-zA-Z]+\w*(\[[0-9]+\])*)",                 // VARIABLE
-        R"([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+)",        // NUMBER note: \d does not work
-        R"(\+|\-|\*|/)",                   // OPARITHM
-        R"(\()",                           // PAROPEN
-        R"(\))"                            // PARCLOSE
+        R"(,)",                                     // COMMA
+        R"([a-zA-Z]+[a-zA-Z0-9]*\s*\()",            // FUNCTION     note: \w does not work
+        R"([a-zA-Z]+[a-zA-Z0-9]*(\[[0-9]+\])*)",    // VARIABLE     note: \w does not work
+        R"([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+)",  // NUMBER       note: \d does not work
+        R"(\+|\-|\*|/)",                            // OPARITHM
+        R"(\()",                                    // PAROPEN
+        R"(\))"                                     // PARCLOSE
     };
     
     // Full pattern
@@ -169,7 +169,7 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 
 
 
-expreval::ShuntingYard::ShuntingYard(std::string sexpr) :
+expreval::Parser::Parser(std::string sexpr) :
     _expression(sexpr),
     _tokens(0)
 {
@@ -177,7 +177,7 @@ expreval::ShuntingYard::ShuntingYard(std::string sexpr) :
 }
 
 
-expreval::TreeNode expreval::ShuntingYard::_apply(Token optor, std::vector<TreeNode> opands)
+expreval::TreeNode expreval::Parser::_apply(Token optor, std::vector<TreeNode> opands)
 {
     expreval::TreeNode tree;
     // Keep operator token in root node
@@ -189,7 +189,7 @@ expreval::TreeNode expreval::ShuntingYard::_apply(Token optor, std::vector<TreeN
 }
 
 
-void expreval::ShuntingYard::_popAndApply()
+void expreval::Parser::_popAndApply()
 {
     // Get operator from operator stack
     expreval::Token optor = _operators.top();
@@ -208,7 +208,7 @@ void expreval::ShuntingYard::_popAndApply()
 }
 
 
-void expreval::ShuntingYard::_applyFunction(Token func)
+void expreval::Parser::_applyFunction(Token func)
 {
     expreval::TreeNode funcTree;
     funcTree.token = func;
@@ -220,7 +220,7 @@ void expreval::ShuntingYard::_applyFunction(Token func)
 }
 
 
-expreval::TreeNode expreval::ShuntingYard::parse()
+expreval::TreeNode expreval::Parser::parse()
 {
     // Empty stacks
     while (!_operands.empty()) _operands.pop();

@@ -1,3 +1,22 @@
+/*
+ * Parse an infix mathematical expression using the Shunting Yard Algorithm.
+ * The parser creates an expression tree with operators in the nodes and operands in the leaves.
+ * 
+ * Supported:
+ * Binary                               +, -, *, /
+ * Unary                                +, -
+ * Numbers in the form                  12, 12., .12, 12.345
+ * Function calls like                  f(x), g(x,3,y)
+ * Variables like                       x, y10, xyz
+ * Variables (array elements) like      x[0], y10[30], xyz[2]
+ * 
+ * The parsing is not robust against syntax errors.
+ * 
+ * Reference: 
+ *  https://www.reedbeta.com/blog/the-shunting-yard-algorithm/
+ * 
+ * */
+
 #ifndef SIMPLE_EXPR_EVAL
 #define SIMPLE_EXPR_EVAL
 
@@ -50,10 +69,10 @@ namespace expreval
         std::vector<TreeNode> children;
     };
     
-    class ShuntingYard
+    class Parser
     {
     public:
-        ShuntingYard(std::string expression);
+        Parser(std::string expression);
         TreeNode parse();                                // Build tree from input expression
     private:        
         TreeNode _apply(Token optor, std::vector<TreeNode> opands);    // Build a sub-tree from an operator and list of operands (i.e. apply operator to operands)
