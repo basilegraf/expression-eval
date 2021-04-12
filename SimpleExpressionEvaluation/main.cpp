@@ -12,7 +12,7 @@
 #include "ExpressionCompiler.h"
 
 
-
+#include "LargeExample.h"
 
 void func(double* z, double* x, double* y)
 {
@@ -68,8 +68,7 @@ int main(int argc, char **argv)
         compiler.RegisterSymbol("x", x);
         compiler.RegisterSymbol("y", y, 2);
         
-        //compiler.AddExpressionTree(tree);
-        //compiler.Compile();
+
         compiler.CompileExpression(sexpr);
         
         x = 0.4;
@@ -81,7 +80,7 @@ int main(int argc, char **argv)
             compiler.Evaluate();
         }
         double durEval = toc(t0);
-        std::cout << "Time difference = " << 1.0e6 * durEval / nRuns << "[us]" << std::endl;
+        std::cout << "Time eval  = " << 1.0e6 * durEval / nRuns << "[us]" << std::endl;
         
         x = 0.4;
         expreval::expr_val_t zTest = 0;
@@ -93,13 +92,76 @@ int main(int argc, char **argv)
             func(&zTest, &x, y);
         }
         double durNative = toc(t0);
-        std::cout << "Time difference = " << 1.0e6 * durNative / nRuns << "[us]" << std::endl;
+        std::cout << "Time native = " << 1.0e6 * durNative / nRuns << "[us]" << std::endl;
         std::cout << "Ratio = " << double(durEval) / double(durNative) << std::endl;
         
         std::cout << z << " " << zTest << "\n";
         
         std::cout << "\n";
         
+        
+        //////// Large example       
+        // Symbols
+        expreval::expr_val_t X[] = {0.03, 0.6};
+        expreval::expr_val_t Xt[] = {0.01, 0.35};
+        expreval::expr_val_t Xtt[] = {0.33, 0.45};
+        // PDFC = [mW, mD, iWz, iDz, cogz, Wcogx, Dcogx, g, E, W, D]
+        expreval::expr_val_t PDFC[] = {0.2, 0.4, 0.1, 0.12, 0.2, 0.25, 0.27, 9.8, 0.1, 0.5, 0.5};
+        expreval::expr_val_t fDFC[6] = {0.0};
+        expreval::expr_val_t fDFC2[6] = {0.0};
+        
+        std::string sexprL = getLargeExampleExpression();
+        
+        // Compile expression
+        expreval::Compiler compilerL;
+        
+        compilerL.RegisterSymbol("X", X, 2);
+        compilerL.RegisterSymbol("Xt", Xt, 2);
+        compilerL.RegisterSymbol("Xtt", Xtt, 2);
+        compilerL.RegisterSymbol("PDFC", PDFC, 11);
+        compilerL.RegisterSymbol("fDFC", fDFC, 6);
+        
+        t0 = tic();
+        compilerL.CompileExpression(sexprL);
+        double compileTime = toc(t0);
+        std::cout << "Compile time = " << compileTime << "s\n";
+        std::cout << "Number of operations : " << compilerL.GetNumOperations() << "\n";
+        
+        nRuns = 1000;
+        X[0] = 0.03;
+        t0 = tic();
+        for (int k = 0; k<nRuns; k++)
+        {
+            X[0] += 1.0e-9;
+            compilerL.Evaluate();
+        }
+        double durEvalL = toc(t0);
+        
+        X[0] = 0.03;
+        t0 = tic();
+        for (int k = 0; k<nRuns; k++)
+        {
+            X[0] += 1.0e-9;
+            LargeExampleFunc(X, Xt, Xtt, PDFC, fDFC2);
+        }
+        double durNativeL = toc(t0);
+        
+        std::cout << "Time eval large example   = " << 1.0e6 * durEvalL / nRuns << "[us]" << std::endl;
+        std::cout << "Time native large example = " << 1.0e6 * durNativeL / nRuns << "[us]" << std::endl;
+        std::cout << "Ratio = " << double(durEvalL) / double(durNativeL) << std::endl;
+        
+        for (int k = 0; k<6; k++)
+        {
+            std::cout << fDFC[k] << ", ";
+        }
+        std::cout << "\n";
+        
+        for (int k = 0; k<6; k++)
+        {
+            std::cout << fDFC2[k] << ", ";
+        }
+        std::cout << "\n";
+
     }
     catch (const std::exception& e)
     {

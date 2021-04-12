@@ -69,10 +69,18 @@ namespace
     {
         *vals[0] = std::atan(*vals[1]);
     }
-    static 
-    void OperatorATan2(expreval::expr_val_t** vals)
+    static void OperatorATan2(expreval::expr_val_t** vals)
     {
         *vals[0] = std::atan2(*vals[1], *vals[2]);
+    }
+    
+    static void OperatorPow(expreval::expr_val_t** vals)
+    {
+        *vals[0] = std::pow(*vals[1], *vals[2]);
+    }
+    static void OperatorSqrt(expreval::expr_val_t** vals)
+    {
+        *vals[0] = std::sqrt(*vals[1]);
     }
     
     
@@ -93,6 +101,8 @@ namespace
         {"acos",    &OperatorACos}, 
         {"atan",    &OperatorATan}, 
         {"atan2",   &OperatorATan2}, 
+        {"pow",     &OperatorPow}, 
+        {"sqrt",    &OperatorSqrt}, 
     };
     
     

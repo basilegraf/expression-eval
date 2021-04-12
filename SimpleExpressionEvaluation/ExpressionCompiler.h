@@ -78,6 +78,8 @@ namespace expreval
         void Evaluate();
         
         void CompileExpression(std::string expr);
+        
+        inline unsigned int GetNumOperations() {return _operations.size();};
     private:
         std::vector<std::string> _split(const std::string &s, char delim); // Split a string
         void _addPrivateSymbol(std::string name);
