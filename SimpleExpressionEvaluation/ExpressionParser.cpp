@@ -221,7 +221,7 @@ void expreval::Parser::_applyFunction(Token func)
     // Intercept special cases
     if (std::regex_match(func.str, _re_pow)) // pow() function
     {
-        if ((func.functionArgs.size() == 2) && func.functionArgs.at(1).token.type == expreval::NUMBER)
+        if ((func.functionArgs.size() == 2) && (func.functionArgs.at(1).token.type == expreval::NUMBER))
         {
             expreval::expr_val_t exponent = std::stod(func.functionArgs.at(1).token.str);
             if (exponent == 2.0)
