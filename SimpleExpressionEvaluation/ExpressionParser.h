@@ -86,6 +86,8 @@ namespace expreval
         std::string _expression;
         std::vector<Token> _tokens;
         TreeNode _tree;
+        // Special cases patterns
+        std::regex _re_pow;
     };
 
 }

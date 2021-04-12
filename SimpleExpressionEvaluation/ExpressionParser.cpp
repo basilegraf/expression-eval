@@ -6,6 +6,7 @@
 #include <regex>
 #include <iterator>
 #include <stdexcept>
+#include <cmath>
 
 #include "ExpressionParser.h"
 
@@ -176,9 +177,9 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 
 expreval::Parser::Parser(std::string sexpr) :
     _expression(sexpr),
-    _tokens(0)
+    _tokens(0),
+    _re_pow(R"(pow\s*\()", std::regex_constants::extended)
 {
-    
 }
 
 
@@ -217,6 +218,31 @@ void expreval::Parser::_popAndApply()
 
 void expreval::Parser::_applyFunction(Token func)
 {
+    // Intercept special cases
+    if (std::regex_match(func.str, _re_pow)) // pow() function
+    {
+        if (false && (func.functionArgs.size() == 2) && func.functionArgs.at(1).token.type == expreval::NUMBER)
+        {
+            expreval::expr_val_t exponent = std::stod(func.functionArgs.at(1).token.str);
+            if (exponent == 2.0)
+            {
+                // change pow(...,2) to square(...)
+                func.functionArgs.pop_back(); // remove second argument
+                func.str = "square(";
+            }
+            else if (exponent == 3.0)
+            {
+                // change pow(...,2) to square(...)
+                func.functionArgs.pop_back(); // remove second argument
+                func.str = "cube(";
+            }
+            // TODO: Deal with other integer powers, or use --fast-math compiler option (dangerous?)
+        }
+    }
+    
+    // Set nary (even if not used later)
+    func.nary = func.functionArgs.size();
+    
     expreval::TreeNode funcTree;
     funcTree.token = func;
     // Copy function arguments to child nodes

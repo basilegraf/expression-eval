@@ -12,4 +12,5 @@ Makefile
 
 SimpleExpressionEvaluation/Debug/
 SimpleExpressionEvaluation/Release/
+SimpleExpressionEvaluation/exprtk.hpp
 *.o

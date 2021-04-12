@@ -18,7 +18,7 @@ void func(double* z, double* x, double* y)
 {
     using namespace std;
     double aaa = -3.5543*cos(-(*x) + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;
-    *z=-cos(aaa + (*x)*y[0]);
+    *z=-cos(aaa + (*x)*y[0]) + pow(*x, 2) + pow(y[0], *x) + pow(y[1], 2.4);
 }
 
 
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
         
         std::string sexpr = 
             "aaa=-3.5543*cos(-x + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;"
-            "z=-cos(aaa + x*y[0])";
+            "z=-cos(aaa + x*y[0]) + pow(x, 2) + pow(y[0], x) + pow(y[1], 2.4)";
         
         /*std::cout << "Expression: " << sexpr << "\n";
         
@@ -98,7 +98,6 @@ int main(int argc, char **argv)
         std::cout << z << " " << zTest << "\n";
         
         std::cout << "\n";
-        
         
         //////// Large example       
         // Symbols
