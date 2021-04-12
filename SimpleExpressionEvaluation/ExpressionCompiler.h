@@ -76,17 +76,22 @@ namespace expreval
         void AddExpressionTree(TreeNode tree);
         void Compile();
         void Evaluate();
+        
+        void CompileExpression(std::string expr);
     private:
+        std::vector<std::string> _split(const std::string &s, char delim); // Split a string
         void _addPrivateSymbol(std::string name);
         void _removePrivateSymbol(std::string name);
         void _addPrivateConstantSymbol(std::string name, expr_val_t value);
         bool _isSymbolNameRegistered(std::string name);
+        bool _isLeaf(TreeNode& tree);
         void _checkSymbolNameAvailable(std::string name);
         std::string _getNewName();
         void _registerTreeAndSetSymbols(TreeNode& tree, bool isRoot = true); 
         void _createPrivateVariables();
         void _compileTree(TreeNode& tree);
     
+        std::vector<std::string> _expressions;
         bool _alreadyCompiled;
         std::map<std::string, Symbol> _symbolMap;
         unsigned int _nameCounter;

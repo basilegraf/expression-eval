@@ -11,10 +11,28 @@
 #include "ExpressionParser.h"
 #include "ExpressionCompiler.h"
 
+
+
+
 void func(double* z, double* x, double* y)
 {
     using namespace std;
-    *z = -3.5543*cos(-(*x) + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;
+    double aaa = -3.5543*cos(-(*x) + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;
+    *z=-cos(aaa + (*x)*y[0]);
+}
+
+
+// Timing functions
+inline std::chrono::steady_clock::time_point tic()
+{
+    return std::chrono::steady_clock::now();
+}
+
+inline double toc(std::chrono::steady_clock::time_point tic_begin)
+{
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    double durEval = std::chrono::duration_cast<std::chrono::microseconds> (end - tic_begin).count();
+    return 1.0e-6 * durEval;
 }
 
 int main(int argc, char **argv)
@@ -26,16 +44,18 @@ int main(int argc, char **argv)
         //std::string sexpr(R"(x + f(2,m) * 3+ z)");
         //std::string sexpr(R"( ((((a+2*x+1)))) = (1+3)*1)");
         
-        std::string sexpr(R"(z=-3.5543*cos(-x + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2)");
+        std::string sexpr = 
+            "aaa=-3.5543*cos(-x + 1 + 2.*(-sin(+y[0]) + .1+y[1]))+ 2;"
+            "z=-cos(aaa + x*y[0])";
         
-        std::cout << "Expression: " << sexpr << "\n";
+        /*std::cout << "Expression: " << sexpr << "\n";
         
         // Parse expression
         expreval::Parser parser(sexpr);
         auto tree = parser.parse();
         std::cout << "Expression tree:\n";
         tree.Print();
-        std::cout << "\n";
+        std::cout << "\n";*/
         
         // Compile expression
         expreval::Compiler compiler;
@@ -48,41 +68,38 @@ int main(int argc, char **argv)
         compiler.RegisterSymbol("x", x);
         compiler.RegisterSymbol("y", y, 2);
         
-        compiler.AddExpressionTree(tree);
-        
-        compiler.Compile();
-        
-        std::chrono::steady_clock::time_point begin, end; 
+        //compiler.AddExpressionTree(tree);
+        //compiler.Compile();
+        compiler.CompileExpression(sexpr);
         
         x = 0.4;
-        begin = std::chrono::steady_clock::now();
+        auto t0 = tic();
         int nRuns = 100000;
         for (int k = 0; k<nRuns; k++)
         {
             x += 1.0e-4;
             compiler.Evaluate();
         }
-        end = std::chrono::steady_clock::now();
-        double durEval = std::chrono::duration_cast<std::chrono::microseconds> (end - begin).count();
-        std::cout << "Time difference = " << durEval / nRuns << "[us]" << std::endl;
+        double durEval = toc(t0);
+        std::cout << "Time difference = " << 1.0e6 * durEval / nRuns << "[us]" << std::endl;
         
         x = 0.4;
         expreval::expr_val_t zTest = 0;
-        begin = std::chrono::steady_clock::now();
+        t0 = tic();
         for (int k = 0; k<nRuns; k++)
         {
             x += 1.0e-4;
             //zTest = -3.5543*(std::cos)(-x + 1 + 2.*(-(std::sin)(+y[0]) + .1+y[1]))+ 2;
             func(&zTest, &x, y);
         }
-        end = std::chrono::steady_clock::now();
-        double durNative = std::chrono::duration_cast<std::chrono::microseconds> (end - begin).count();
-        std::cout << "Time difference = " << durNative / nRuns << "[us]" << std::endl;
+        double durNative = toc(t0);
+        std::cout << "Time difference = " << 1.0e6 * durNative / nRuns << "[us]" << std::endl;
         std::cout << "Ratio = " << double(durEval) / double(durNative) << std::endl;
         
         std::cout << z << " " << zTest << "\n";
         
         std::cout << "\n";
+        
     }
     catch (const std::exception& e)
     {

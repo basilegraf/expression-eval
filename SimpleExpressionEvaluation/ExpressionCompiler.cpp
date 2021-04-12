@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <string>
+#include <sstream>
 #include <regex>
 #include <iterator>
 #include <stdexcept>
@@ -141,6 +142,18 @@ void expreval::Compiler::RegisterSymbol(std::string name, expr_val_t* var, unsig
     }
 }
 
+std::vector<std::string> expreval::Compiler::_split(const std::string& s, char delim)
+{
+    std::stringstream ss(s);
+    std::string item;
+    std::vector<std::string> elems;
+    while (std::getline(ss, item, delim)) 
+    {
+        elems.push_back(item);
+    }
+    return elems;
+}
+
 void expreval::Compiler::_addPrivateSymbol(std::string name)
 {
     // Register symbol with a provisory null pointer
@@ -183,6 +196,11 @@ bool expreval::Compiler::_isSymbolNameRegistered(std::string name)
     return (it != _symbolMap.end());
 }
 
+bool expreval::Compiler::_isLeaf(TreeNode& tree)
+{
+    return std::begin(tree.children) == std::end(tree.children);
+}
+
 void expreval::Compiler::_checkSymbolNameAvailable(std::string name)
 {
     if (_isSymbolNameRegistered(name))
@@ -194,8 +212,8 @@ void expreval::Compiler::_checkSymbolNameAvailable(std::string name)
 
 std::string expreval::Compiler::_getNewName()
 {
-    // Note: leading underscore is not allowed in parser variable names
-    std::string newName = "_tmp" + std::to_string(_nameCounter);
+    // Note: leading # is not allowed in parser variable names
+    std::string newName = "#tmp" + std::to_string(_nameCounter);
     _nameCounter++;
     return newName;
 }
@@ -248,6 +266,10 @@ void expreval::Compiler::_registerTreeAndSetSymbols(expreval::TreeNode& treeOrig
         // We implement a shortcut for the root assignment operator: 
         // we copy the symbol name of the first child (it was already registered and it is the value to be assigned anyways)
         // Next we will only keep the 2nd child sub-tree (i.e. the expression to assign to the first child variable)
+        //
+        // NOTE: This has the side effect that an expression of the form x = y will generate an error. Indeed, the the symbol 
+        // y will be removed and replaced by x. So that y will be missing when e.g. compiling the previous expressions. 
+        // However, such an assignement is not very usefull...
         if (tree.children.at(0).token.type != expreval::VARIABLE)
         {
             throw std::range_error("The left-hand side of the root expression assignment operator should be a variable");
@@ -503,4 +525,20 @@ void expreval::Compiler::Evaluate()
     {
         opIt->function(opIt->vals);
     }
+}
+
+// Note: Register variables first
+void expreval::Compiler::CompileExpression(std::string expr)
+{
+    // Build a vector of expressions
+    auto _expressions = _split(expr, ';');
+    for (auto itExpr = std::begin(_expressions); itExpr != std::end(_expressions); itExpr++)
+    {
+        // Parse expression
+        expreval::Parser parser(*itExpr);
+        auto tree = parser.parse();
+        // Add sub expression tree
+        AddExpressionTree(tree);
+    }
+    Compile();
 }

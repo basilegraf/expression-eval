@@ -99,7 +99,7 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
             }
             
             
-            std::cout << tokStr << "\tMatched " << cTokenName[k] << "\tnary = " << nary << "\t prev: "<< (int)prevTokType <<"\n";
+            // std::cout << tokStr << "\tMatched " << cTokenName[k] << "\tnary = " << nary << "\t prev: "<< (int)prevTokType <<"\n";
             
             break;
         }
@@ -151,9 +151,9 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
         std::sregex_iterator(sexpr.begin(), sexpr.end(), reTokens);
     auto re_end = std::sregex_iterator();
 
-    std::cout << "Tokenize: Found "
+    /*std::cout << "Tokenize: Found "
               << std::distance(re_begin, re_end)
-              << " matches:\n";
+              << " matches:\n";*/
               
     std::vector<expreval::Token> tokens(0);
     
