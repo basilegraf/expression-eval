@@ -78,10 +78,19 @@ namespace
     {
         *vals[0] = std::pow(*vals[1], *vals[2]);
     }
+    static void OperatorSquare(expreval::expr_val_t** vals)
+    {
+        *vals[0] = *vals[1] * *vals[1];
+    }
+    static void OperatorCube(expreval::expr_val_t** vals)
+    {
+        *vals[0] = *vals[1] * *vals[1] * *vals[1];
+    }
     static void OperatorSqrt(expreval::expr_val_t** vals)
     {
         *vals[0] = std::sqrt(*vals[1]);
     }
+    
     
     
     // Operator map
@@ -102,6 +111,8 @@ namespace
         {"atan",    &OperatorATan}, 
         {"atan2",   &OperatorATan2}, 
         {"pow",     &OperatorPow}, 
+        {"square",  &OperatorSquare}, 
+        {"cube",    &OperatorCube}, 
         {"sqrt",    &OperatorSqrt}, 
     };
     
