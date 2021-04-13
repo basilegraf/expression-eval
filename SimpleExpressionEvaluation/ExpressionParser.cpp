@@ -13,6 +13,8 @@
 
 namespace
 {
+    // All arrays are of size NUMBER_TOKEN_TYPE == 7
+    
     char const* cTokenName[] =
     {
         "COMMA",
@@ -24,20 +26,23 @@ namespace
         "PARENCLOSE"
     };
     
-    // Individual token patterns
-    std::array<std::string, expreval::NUMBER_TOKEN_TYPE> patterns 
+
+    // Token patterns and re
+    
+    // Individual token patterns 
+    static const std::string patterns[]
     {
         R"(,)",                                     // COMMA
-        R"([a-zA-Z]+[a-zA-Z0-9]*\s*\()",            // FUNCTION     note: \w does not work
-        R"([a-zA-Z]+[a-zA-Z0-9]*(\[[0-9]+\])*)",    // VARIABLE     note: \w does not work
+        R"([_a-zA-Z]+[a-zA-Z0-9]*\s*\()",           // FUNCTION     note: \w does not work
+        R"([_a-zA-Z]+[a-zA-Z0-9]*(\[[0-9]+\])*)",   // VARIABLE     note: \w does not work
         R"([0-9]*\.[0-9]+|[0-9]+\.[0-9]*|[0-9]+)",  // NUMBER       note: \d does not work
-        R"(\+|\-|\*|/|=)",                            // OPARITHM
+        R"(\+|\-|\*|/|=)",                          // OPARITHM
         R"(\()",                                    // PAROPEN
         R"(\))"                                     // PARCLOSE
     };
     
-    // Full pattern
-    std::string pattern = R"(()" + 
+    // Any token pattern
+    static const std::string pattern = R"(()" + 
         patterns[0] + R"(|)" + 
         patterns[1] + R"(|)" + 
         patterns[2] + R"(|)" + 
@@ -45,6 +50,28 @@ namespace
         patterns[4] + R"(|)" + 
         patterns[5] + R"(|)" + 
         patterns[6] + R"())";
+        
+    static const std::regex reAnyToken(pattern, std::regex_constants::extended);
+    
+    static const std::regex reToken0(patterns[0], std::regex_constants::extended);
+    static const std::regex reToken1(patterns[1], std::regex_constants::extended);
+    static const std::regex reToken2(patterns[2], std::regex_constants::extended);
+    static const std::regex reToken3(patterns[3], std::regex_constants::extended);
+    static const std::regex reToken4(patterns[4], std::regex_constants::extended);
+    static const std::regex reToken5(patterns[5], std::regex_constants::extended);
+    static const std::regex reToken6(patterns[6], std::regex_constants::extended);
+    
+    static const std::regex reIndividualToken[] = 
+    {
+        reToken0, reToken1, reToken2, reToken3, reToken4, reToken5, reToken6
+    };
+    
+    
+    // Special cases re
+    
+    // Re matching the pow( function call
+    static const std::regex reFunctionPow(R"(pow\s*\()", std::regex_constants::extended);
+
 }
 
 expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
@@ -57,10 +84,8 @@ expreval::Token::Token(std::string tokStr,  expreval::eTokenType prevTokType) :
     
     for (unsigned int k = 0; k < NUMBER_TOKEN_TYPE; k++)
     {
-        // RegEx for k'th token type
-        std::regex reToken(patterns[k], std::regex_constants::extended);
         
-        if (std::regex_match(tokStr, reToken))
+        if (std::regex_match(tokStr, reIndividualToken[k]))
         {            
             type = expreval::eTokenType(k);
             
@@ -145,11 +170,9 @@ void expreval::TreeNode::Print()
 
 std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 {
-    // Re for general token pattern
-    std::regex reTokens(pattern, std::regex_constants::extended);
     
     auto re_begin =
-        std::sregex_iterator(sexpr.begin(), sexpr.end(), reTokens);
+        std::sregex_iterator(sexpr.begin(), sexpr.end(), reAnyToken);
     auto re_end = std::sregex_iterator();
 
     /*std::cout << "Tokenize: Found "
@@ -177,8 +200,7 @@ std::vector<expreval::Token> expreval::Token::Tokenize(std::string sexpr)
 
 expreval::Parser::Parser(std::string sexpr) :
     _expression(sexpr),
-    _tokens(0),
-    _re_pow(R"(pow\s*\()", std::regex_constants::extended)
+    _tokens(0)
 {
 }
 
@@ -219,7 +241,7 @@ void expreval::Parser::_popAndApply()
 void expreval::Parser::_applyFunction(Token func)
 {
     // Intercept special cases
-    if (std::regex_match(func.str, _re_pow)) // pow() function
+    if (std::regex_match(func.str, reFunctionPow)) // pow() function
     {
         if ((func.functionArgs.size() == 2) && (func.functionArgs.at(1).token.type == expreval::NUMBER))
         {
